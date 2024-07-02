@@ -171,7 +171,7 @@ function createSequenceControls(){
      // adds event listener for the slider when user clicks reverse
     document.querySelector('#forward').addEventListener('click', function () {
         var slider = document.querySelector('.range-slider');
-        if (slider.value <= slider.max) {
+        if (slider.value <= 3000) {
             slider.value++;
             updateMap(slider.value);
         }
@@ -190,7 +190,7 @@ function updateMap(index) {
     });
 
     // Fetch the data and re-add the filtered data
-    fetch("data/crocs_test.geojson")
+    fetch("data/crocs_fin.geojson")
         .then(function (response) {
             return response.json();
         })
@@ -226,7 +226,7 @@ function processData(data){
 //function to retrieve the data and place it on the map
 function getData(map){
     //load the json from data folder
-    fetch("data/crocs_test.geojson")
+    fetch("data/crocs_fin.geojson")
         .then(function(response){
             return response.json();
         })
