@@ -145,12 +145,13 @@ function createSequenceControls(){
     document.querySelector(".range-slider").step = 1;
 
     // add buttons
-    document.querySelector('#panel').insertAdjacentHTML('beforeend','<button class="step" id="reverse">Reverse</button>');
     document.querySelector('#panel').insertAdjacentHTML('beforeend','<button class="step" id="forward">Forward</button>');
+    document.querySelector('#panel').insertAdjacentHTML('beforeend','<button class="step" id="reverse">Reverse</button>');
    
     //replace buttons with images
-    document.querySelector('#reverse').insertAdjacentHTML('beforeend',"<img src='img/reverse.png'>")
     document.querySelector('#forward').insertAdjacentHTML('beforeend',"<img src='img/forward.png'>")
+    document.querySelector('#reverse').insertAdjacentHTML('beforeend',"<img src='img/reverse.png'>")
+    
 
 
 
@@ -159,20 +160,21 @@ function createSequenceControls(){
         updateMap(this.value);
     });
 
+
+     // adds event listener for the slider when user clicks forward
+    document.querySelector('#forward').addEventListener('click', function () {
+        var slider = document.querySelector('.range-slider');
+        if (slider.value <= 3000) {
+            slider.value++;
+            updateMap(slider.value);
+        }
+    });
+
     // adds event listener for the slider when user clicks reverse
     document.querySelector('#reverse').addEventListener('click', function () {
         var slider = document.querySelector('.range-slider');
         if (slider.value > slider.min) {
             slider.value--;
-            updateMap(slider.value);
-        }
-    });
-
-     // adds event listener for the slider when user clicks reverse
-    document.querySelector('#forward').addEventListener('click', function () {
-        var slider = document.querySelector('.range-slider');
-        if (slider.value <= 3000) {
-            slider.value++;
             updateMap(slider.value);
         }
     });
@@ -223,6 +225,9 @@ function processData(data){
     return attributes;
 };    
 
+
+
+
 //function to retrieve the data and place it on the map
 function getData(map){
     //load the json from data folder
@@ -241,8 +246,24 @@ function getData(map){
             createPropSymbols(json, map, timestamps[0]);
             createSequenceControls(timestamps);     
         })
+
+// Add legend to map
+        var legend = L.control({position: 'bottomright'});
+        legend.onAdd = function (map) {
+            var div = L.DomUtil.create('div', 'legend');
+            var crocNames = ["Aristotle", "Hamish", "Ryan", "Tarlish"]; // Add more croc names here
+            var colors = ["#ff0000", "#FFFF00", "#33FF33", "#660066"]; // Corresponding color
+
+            // Loop through croc names and generate a label with a colored square for each
+            for (var i = 0; i < crocNames.length; i++) {
+                div.innerHTML +=
+                    '<i class="circle" style="background:' + colors[i] + '"></i> ' +
+                    crocNames[i] + '<br>';
+            }
+            return div;
+        };
+        legend.addTo(map);
 };
 
+document.addEventListener('DOMContentLoaded',createMap);// Loop through croc names and generate a label with a colored square for each
 
-
-document.addEventListener('DOMContentLoaded',createMap);
