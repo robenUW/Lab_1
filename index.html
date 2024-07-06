@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width">
-            <title></title>
+            <title>Lab 1 - GEOG575</title>
 
         <!--put your external stylesheet links here-->
         <link rel="stylesheet" href="css/style.css">
@@ -27,8 +27,69 @@
 
     <body>
         <!--put your initial page content here-->
-        <div id="map"></div>
-        <div id="panel"></div>
+        <!---title-->
+        <div id = "title">
+            <h1>Using Translocation Data for Use Vs. Availability Analysis</h1>
+        </div>
+
+        <!--image container-->
+        <div id = "crocinfo">
+        <img src="img/Hamish.jpg" height="550px" width="" alt="This image is going to be switched" name="SwitchingImage" />
+ 
+        <a href="javascript:NextImage()" style="float:right">Next Image</a>
+        <a href="javascript:PreviousImage()">Previous Image</a>
+        </div>  
+        <!--image container end-->
+
+        <!--text container-->
+
+        <div id = projectsum> 
+            <h1>Project Summary:</h1>
+                <p1>The analysis that will be described below was done for a 2013 final project during my undergraduate course for Advanced GIS. 
+                
+                This project started out with the idea that Salt water crocodiles spend more time in one type of cover type than another. 
+                The goal for this project was to discover what cover type they spend more time. </p1>
+        
+        <div id = methods>
+            <h1>Methods: Raster Analysis </h1>
+                <p1>1. Stack bands 3 and 7 from Landsat data  
+                    <br> </br>
+                    2. Use Radiance Model in Erdas Imagine to correct for radiace. Stack 3 rasters
+                    <br> </br>
+                    3. Run Tassled Cap Analysis (separates brightness and greenness values to make it simpler to separate Wetlands from Savannah).
+                    <br> </br>
+                    4. Mosaic images together, for further analysis. 
+                </p1>
+                
+            <h2>Methods: Homerange Analysis </h2>
+                <p2>1. Create Kernel Rasters for each crocodile.
+                <br></br>2. Create Isopleths for the 95%, 90%, 85% and 80% home range size. To see if there was a difference in home range 
+                       sizes and also in the use and availability values. </p2>
+
+
+            <h3>Methods: Use Vs. Availability Analysis </h3>
+                </p3>1. Reclassify moasicked raster into 4 classifications, Wetlands, Savanah, Forest, Water.
+                    <br> </br>
+                    2. Convert Isopleths to polygons.
+                    <br> </br>
+                    3. Clip raster to polygons
+                    <br> </br>
+                    4. Use Tabulate Area (ArcMap)to calculate availability of the land cover 
+                    <br> </br>
+                    5. These values were all divided by 900 to acquire the pixel value per home
+                    range.  These values were then imported to excel and formed into Bard Graphs.
+                </p3>
+        </div> 
+
+        <!--text container end-->
+
+
+        <div id = mapinfo> 
+            <h1> Tracking Data: </h1> 
+                <p1>Below, you can forward through the tracking data of 4 crocodiles (3 of which were used for the above Use. Vs. Availability Analysis).</p1>
+            <h2 id="map"> </h2> 
+        </div>
+        
         <!--you can also use this space for internal scripts;
         place these within <script> tags-->
         
