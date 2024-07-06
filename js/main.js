@@ -14,7 +14,7 @@ function createMap(){
 
     //add OSM base tilelayer
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     }).addTo(map);
 
     //call getData function
@@ -49,9 +49,9 @@ function calculateMinValue(data){
 //calculate the radius of each proportional symbol
 function calcPropRadius(attValue) {
     //constant factor adjusts symbol sizes evenly
-    var minRadius = 1;
+    var minRadius = 3;
     //Flannery Apperance Compensation formula
-    var radius = 2.5 * Math.pow(attValue/minValue,6) * minRadius
+    var radius = 1.5 * Math.pow(attValue/minValue,6) * minRadius
 
     return radius;
 };
@@ -68,6 +68,12 @@ function getColor(crocName) {
     };
     //others with no name will appear in this color
     return colors[crocName] || "#00ff00";
+}
+
+function formatDate(timestamp) {
+    var date = new Date(timestamp);
+    return date.toLocaleDateString() + " " + date.toLocaleTimeString();
+
 }
 
 function pointToLayer(feature, latlng){
@@ -93,17 +99,19 @@ function pointToLayer(feature, latlng){
     //create circle marker layer
     var layer = L.circleMarker(latlng, options);
     
-    //build popup content string
-    var popupContentsize = "<p><b>Size (cm):</b>,  " + feature.properties["total length (cm)"] 
-    + "<p><b>Croc Name:</b> " + feature.properties["croc name"] + 
-    "<p><b>GPS Fix Time:</b> " + feature.properties["GPS Fix Time"] + 
-    "<p><b>id:</b> " + feature.properties["OBJECTID"]
-    
-    //bind the popup to the circle marker
+    var formattedDate = formatDate(feature.properties["GPS Fix Time"]);
+    var popupContentsize = "<p><b>Size (cm):</b> " + feature.properties["total length (cm)"] +
+        "<p><b>Croc Name:</b> " + feature.properties["croc name"] +
+        "<p><b>GPS Fix Time:</b> " + formattedDate +
+        "<p><b>id:</b> " + feature.properties["OBJECTID"];
+   
+   //bind the popup to the circle marker
     layer.bindPopup(popupContentsize);
+
     //return the circle marker to the L.geoJson pointToLayer option
     return layer;
-};
+}
+
 
 // Function to add circle markers for point features to the map
 function createPropSymbols(data, map, timestamp) {
@@ -130,34 +138,46 @@ function createPropSymbols(data, map, timestamp) {
     }).addTo(map);
 };
 
+//Create new sequence controls
+function createSequenceControls() {
 
+    var SequenceControl = L.Control.extend({
+        options: {
+            position: 'topright'
+        },
 
-// Create new sequence controls
-function createSequenceControls(){
-    //create range input element (slider)
-    var slider = "<input class='range-slider' type='range'></input>";
-    document.querySelector("#panel").insertAdjacentHTML('beforeend',slider);
+        onAdd: function () {
+            // create the control container div with a particular class name
+            var container = L.DomUtil.create('div', 'sequence-control-container');
+
+            //create range input element (slider)
+            container.insertAdjacentHTML('beforeend', '<input class="range-slider" type="range">')
+
+            //add step buttons
+            container.insertAdjacentHTML('beforeend', '<button class="step" id="reverse" title="Reverse"><img src="img/reverse.png"></button>'); 
+            container.insertAdjacentHTML('beforeend', '<button class="step" id="forward" title="Forward"><img src="img/forward.png"></button>');
+
+            //disable any mouse event listeners for the container
+            L.DomEvent.disableClickPropagation(container);
+
+            return container;
+        }
+    });
+
+    map.addControl(new SequenceControl());    // add listeners after adding control}
 
     //set slider attributes
     document.querySelector(".range-slider").max = timestamps.length - 1;
     document.querySelector(".range-slider").min = 0;
     document.querySelector(".range-slider").value = 0;
-    document.querySelector(".range-slider").step = 1;
-
-    // add buttons
-    document.querySelector('#panel').insertAdjacentHTML('beforeend','<button class="step" id="forward">Forward</button>');
-    document.querySelector('#panel').insertAdjacentHTML('beforeend','<button class="step" id="reverse">Reverse</button>');
-   
-    //replace buttons with images
-    document.querySelector('#forward').insertAdjacentHTML('beforeend',"<img src='img/forward.png'>")
-    document.querySelector('#reverse').insertAdjacentHTML('beforeend',"<img src='img/reverse.png'>")
-    
-
+    document.querySelector(".range-slider").step = 1;   
 
 
     // Add event listeners for buttons and slider
     document.querySelector('.range-slider').addEventListener('input', function () {
         updateMap(this.value);
+    
+
     });
 
 
@@ -192,7 +212,7 @@ function updateMap(index) {
     });
 
     // Fetch the data and re-add the filtered data
-    fetch("data/crocs_fin.geojson")
+    fetch("data/crocs.geojson")
         .then(function (response) {
             return response.json();
         })
@@ -225,13 +245,10 @@ function processData(data){
     return attributes;
 };    
 
-
-
-
 //function to retrieve the data and place it on the map
 function getData(map){
     //load the json from data folder
-    fetch("data/crocs_fin.geojson")
+    fetch("data/crocs.geojson")
         .then(function(response){
             return response.json();
         })
@@ -248,22 +265,56 @@ function getData(map){
         })
 
 // Add legend to map
-        var legend = L.control({position: 'bottomright'});
+        var legend = L.control({position: 'bottomleft'});
         legend.onAdd = function (map) {
             var div = L.DomUtil.create('div', 'legend');
-            var crocNames = ["Aristotle", "Hamish", "Ryan", "Tarlish"]; // Add more croc names here
+            labels = ['<strong> Salt Water Crocodile: Length (cm) </strong>'];
+            var crocNames = ["Aristotle: 3955 ", "Hamish: 3890", "Ryan: 4505", "Tarlisha: 3266"]; // Add more croc names here
             var colors = ["#ff0000", "#FFFF00", "#33FF33", "#660066"]; // Corresponding color
 
             // Loop through croc names and generate a label with a colored square for each
             for (var i = 0; i < crocNames.length; i++) {
+                
                 div.innerHTML +=
+                labels.push(
                     '<i class="circle" style="background:' + colors[i] + '"></i> ' +
-                    crocNames[i] + '<br>';
+                    crocNames[i] + '<br>');
             }
+                div.innerHTML = labels.join('<br>')
             return div;
+            
         };
+        
         legend.addTo(map);
 };
 
 document.addEventListener('DOMContentLoaded',createMap);// Loop through croc names and generate a label with a colored square for each
 
+// -1 because array members start from 0.
+var NumberOfImages = 3 - 1;
+ 
+var img = new Array(NumberOfImages);
+ 
+img[0] = "img/Aristotle.jpg";
+img[1] = "img/Hamish.jpg";
+img[2] = "img/Ryan.jpg";
+
+ 
+// Array key of current image.
+var imgNumber = 0;
+ 
+function NextImage() {
+  // Stop moving forward when we are out of images.
+  if (imgNumber < NumberOfImages) {
+    imgNumber++;
+    document.images["SwitchingImage"].src = img[imgNumber];
+  }
+}
+ 
+function PreviousImage() {
+  // Stop moving backward when we are out of images.
+  if (imgNumber != 0) {
+    imgNumber--;
+    document.images["SwitchingImage"].src = img[imgNumber];
+  }
+}
